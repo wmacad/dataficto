@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адаптивная страница с Power BI</title>
+    <style>
+        /* Устанавливаем общие стили */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f9;
+        }
+        
+        /* Контейнер для Power BI */
+        .content {
+            width: 90%;
+            max-width: 800px;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            border-radius: 8px;
+        }
+
+        /* Адаптивное видео/фрейм */
+        .embed-container {
+            position: relative;
+            padding-bottom: 56.25%; /* Соотношение сторон 16:9 */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #000;
+        }
+
+        .embed-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Отчёт Power BI</h1>
+        <p>Ниже представлен встроенный отчёт Power BI:</p>
+        
+        <div class="embed-container">
+            <iframe title="Резолюции РП" src="https://app.powerbi.com/view?r=eyJrIjoiMmUzZjU2ZGQtZTUzMC00ZTlhLWIyODItYTg0NGZkMWRkZmIzIiwidCI6IjZlNzhkOGQ3LTRlNGUtNDMwNC05NmYxLTY5MzQyYzNjMmQzNSIsImMiOjl9" allowFullScreen="true"></iframe>
+        </div>
+    </div>
+</body>
+</html>
