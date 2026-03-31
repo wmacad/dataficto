@@ -191,7 +191,8 @@
             border-color: #b4c8db;
         }
 
-        .report-card {
+        .report-card,
+        .contacts-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
@@ -199,7 +200,8 @@
             overflow: hidden;
         }
 
-        .report-header {
+        .report-header,
+        .contacts-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -209,27 +211,31 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .report-title-wrap {
+        .report-title-wrap,
+        .contacts-title-wrap {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
 
-        .report-title {
+        .report-title,
+        .contacts-title {
             margin: 0;
             font-size: 28px;
             font-weight: 700;
             color: var(--text);
         }
 
-        .report-accent {
+        .report-accent,
+        .contacts-accent {
             width: 58px;
             height: 3px;
             background: var(--primary);
             border-radius: 999px;
         }
 
-        .report-body {
+        .report-body,
+        .contacts-body {
             padding: 22px;
         }
 
@@ -262,6 +268,108 @@
             pointer-events: none;
         }
 
+        .contacts-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(320px, 1fr));
+            gap: 18px;
+        }
+
+        .contact-item {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface-soft);
+            padding: 18px;
+        }
+
+        .contact-top {
+            display: grid;
+            grid-template-columns: 84px 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .contact-avatar {
+            width: 84px;
+            height: 84px;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #dbe8f4 0%, #c8d9ea 100%);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            border: 1px solid #bfd0e0;
+            overflow: hidden;
+        }
+
+        .contact-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .contact-project {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #e8f0f8;
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .contact-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.35;
+        }
+
+        .contact-info {
+            display: grid;
+            gap: 8px;
+        }
+
+        .contact-row {
+            font-size: 15px;
+            line-height: 1.45;
+            color: var(--text);
+            word-break: break-word;
+        }
+
+        .contact-label {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .contact-row a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .contact-row a:hover {
+            text-decoration: underline;
+        }
+
+        .contact-note {
+            margin-top: 22px;
+            padding: 16px 18px;
+            border: 1px dashed #bfd0e0;
+            border-radius: 12px;
+            background: #fbfdff;
+        }
+
+        .contact-note-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
         .back-row {
             margin-top: 18px;
             display: flex;
@@ -277,11 +385,13 @@
         }
 
         @media (max-width: 980px) {
-            .hero-grid {
+            .hero-grid,
+            .contacts-list {
                 grid-template-columns: 1fr;
             }
 
-            .report-header {
+            .report-header,
+            .contacts-header {
                 flex-direction: column;
                 align-items: flex-start;
             }
@@ -323,7 +433,8 @@
             }
 
             .hero,
-            .report-body {
+            .report-body,
+            .contacts-body {
                 padding-left: 16px;
                 padding-right: 16px;
             }
@@ -337,12 +448,25 @@
                 font-size: 28px;
             }
 
-            .report-title {
+            .report-title,
+            .contacts-title {
                 font-size: 22px;
             }
 
             .report-frame iframe {
                 min-height: 360px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .contact-top {
+                grid-template-columns: 1fr;
+            }
+
+            .contact-avatar {
+                width: 72px;
+                height: 72px;
+                font-size: 24px;
             }
         }
 
@@ -355,8 +479,13 @@
                 font-size: 18px;
             }
 
-            .report-title {
+            .report-title,
+            .contacts-title {
                 font-size: 20px;
+            }
+
+            .contact-name {
+                font-size: 18px;
             }
 
             .report-frame iframe {
@@ -371,7 +500,7 @@
     </style>
     <script>
         function showPage(pageId) {
-            const pages = ["main", "page1", "page2"];
+            const pages = ["main", "page1", "contacts"];
             pages.forEach(function(id) {
                 document.getElementById(id).style.display = "none";
             });
@@ -395,7 +524,7 @@
             <nav class="header-nav">
                 <a href="#" onclick="showPage('main'); return false;">Главная</a>
                 <a href="#" onclick="showPage('page1'); return false;">Резолюции</a>
-                <a href="#" onclick="showPage('page2'); return false;">Отчет РП</a>
+                <a href="#" onclick="showPage('contacts'); return false;">Контакты</a>
             </nav>
         </div>
     </header>
@@ -403,18 +532,18 @@
     <main class="page-shell">
         <div id="main" class="container">
             <section class="hero">
-                <h1>Выберите отчет</h1>
+                <h1>Выберите раздел</h1>
                 <div class="hero-subline"></div>
 
                 <div class="hero-grid">
                     <div class="nav-tile" onclick="showPage('page1')">
                         <div class="nav-tile-title">Резолюции</div>
-                        <div class="nav-tile-text">Переход к отчету по резолюциям.</div>
+                        <div class="nav-tile-text">Переход к аналитическому отчету.</div>
                     </div>
 
-                    <div class="nav-tile" onclick="showPage('page2')">
-                        <div class="nav-tile-title">Отчет РП</div>
-                        <div class="nav-tile-text">Переход к отчету руководителя проекта.</div>
+                    <div class="nav-tile" onclick="showPage('contacts')">
+                        <div class="nav-tile-title">Контакты</div>
+                        <div class="nav-tile-text">Контактные данные по направлениям.</div>
                     </div>
                 </div>
             </section>
@@ -444,23 +573,85 @@
             </section>
         </div>
 
-        <div id="page2" class="container">
-            <section class="report-card">
-                <div class="report-header">
-                    <div class="report-title-wrap">
-                        <h2 class="report-title">Отчет РП</h2>
-                        <div class="report-accent"></div>
+        <div id="contacts" class="container">
+            <section class="contacts-card">
+                <div class="contacts-header">
+                    <div class="contacts-title-wrap">
+                        <h2 class="contacts-title">Контакты</h2>
+                        <div class="contacts-accent"></div>
                     </div>
                 </div>
-                <div class="report-body">
-                    <div class="report-frame">
-                        <iframe
-                            title="Отчет РП"
-                            src="https://app.powerbi.com/view?r=eyJrIjoiMTdmN2NiYzgtOWI5OS00ZTMwLTkzY2MtMzE5OTdiOWY3ODc2IiwidCI6IjZlNzhkOGQ3LTRlNGUtNDMwNC05NmYxLTY5MzQyYzNjMmQzNSIsImMiOjl9"
-                            allowfullscreen="true">
-                        </iframe>
-                        <div class="powerbi-mask" aria-hidden="true"></div>
+
+                <div class="contacts-body">
+                    <div class="contacts-list">
+                        <div class="contact-item">
+                            <div class="contact-top">
+                                <div class="contact-avatar">ДЕ</div>
+                                <div>
+                                    <div class="contact-project">«Все лучшее детям» (Ю4)</div>
+                                    <div class="contact-name">Демьянов Евгений Игоревич</div>
+                                    <div class="contact-info">
+                                        <div class="contact-row"><span class="contact-label">Телефон:</span> <a href="tel:+79122378057">+7 (912) 237-80-57</a></div>
+                                        <div class="contact-row"><span class="contact-label">E-mail:</span> <a href="mailto:e.demianov@ficto.ru">e.demianov@ficto.ru</a></div>
+                                        <div class="contact-row"><span class="contact-label">Мессенджер:</span> —</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="contact-item">
+                            <div class="contact-top">
+                                <div class="contact-avatar">ЛВ</div>
+                                <div>
+                                    <div class="contact-project">«Ведущие школы» (Ю5)</div>
+                                    <div class="contact-name">Ласорыб Виктория Александровна</div>
+                                    <div class="contact-info">
+                                        <div class="contact-row"><span class="contact-label">Телефон:</span> <a href="tel:+79167294812">+7 (916) 729-48-12</a></div>
+                                        <div class="contact-row"><span class="contact-label">E-mail:</span> <a href="mailto:v.soloviova@ficto.ru">v.soloviova@ficto.ru</a></div>
+                                        <div class="contact-row"><span class="contact-label">Мессенджер:</span> —</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="contact-item">
+                            <div class="contact-top">
+                                <div class="contact-avatar">АА</div>
+                                <div>
+                                    <div class="contact-project">«Педагоги и наставники» (Ю6)</div>
+                                    <div class="contact-name">Алеева Алсу Наилевна</div>
+                                    <div class="contact-info">
+                                        <div class="contact-row"><span class="contact-label">Телефон:</span> <a href="tel:+79266161869">+7 (926) 616-18-69</a></div>
+                                        <div class="contact-row"><span class="contact-label">E-mail:</span> <a href="mailto:a.aleeva@ficto.ru">a.aleeva@ficto.ru</a></div>
+                                        <div class="contact-row"><span class="contact-label">Мессенджер:</span> —</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="contact-item">
+                            <div class="contact-top">
+                                <div class="contact-avatar">ГО</div>
+                                <div>
+                                    <div class="contact-project">«Профессионалитет» (Ю9)</div>
+                                    <div class="contact-name">Гладилина Ольга Сергеевна</div>
+                                    <div class="contact-info">
+                                        <div class="contact-row"><span class="contact-label">Телефон:</span> <a href="tel:+79170851250">+7 (917) 085-12-50</a></div>
+                                        <div class="contact-row"><span class="contact-label">E-mail:</span> <a href="mailto:o.gladilina@ficto.ru">o.gladilina@ficto.ru</a></div>
+                                        <div class="contact-row"><span class="contact-label">Мессенджер:</span> —</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="contact-note">
+                        <div class="contact-note-title">В непонятных ситуациях</div>
+                        <div class="contact-row"><strong>Гладилина Ольга Сергеевна</strong></div>
+                        <div class="contact-row"><span class="contact-label">Телефон:</span> <a href="tel:+79170851250">+7 (917) 085-12-50</a></div>
+                        <div class="contact-row"><span class="contact-label">E-mail:</span> <a href="mailto:o.gladilina@ficto.ru">o.gladilina@ficto.ru</a></div>
+                    </div>
+
                     <div class="back-row">
                         <button class="button secondary" onclick="showPage('main')">Назад</button>
                     </div>
