@@ -268,6 +268,52 @@
             pointer-events: none;
         }
 
+        .frame-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 12px;
+        }
+
+        .report-frame.is-fullscreen {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            border: 0;
+            z-index: 9999;
+            background: #fff;
+        }
+
+        .report-frame.is-fullscreen iframe {
+            width: 100%;
+            height: 100%;
+            min-height: 100vh;
+            aspect-ratio: auto;
+        }
+
+        .report-frame.is-fullscreen .powerbi-mask {
+            width: clamp(170px, 20vw, 280px);
+            height: clamp(38px, 4.5vw, 56px);
+        }
+
+        .report-frame.is-fullscreen .close-fullscreen-btn {
+            display: inline-flex;
+        }
+
+        .close-fullscreen-btn {
+            display: none;
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            z-index: 4;
+            box-shadow: 0 8px 22px rgba(33, 53, 77, 0.18);
+        }
+
+        body.custom-fullscreen-active {
+            overflow: hidden;
+        }
+
         .contacts-list {
             display: grid;
             grid-template-columns: repeat(2, minmax(320px, 1fr));
@@ -508,6 +554,26 @@
             window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
+        function openCustomFullscreen() {
+            const frame = document.getElementById("reportFrame");
+            if (!frame) return;
+            frame.classList.add("is-fullscreen");
+            document.body.classList.add("custom-fullscreen-active");
+        }
+
+        function closeCustomFullscreen() {
+            const frame = document.getElementById("reportFrame");
+            if (!frame) return;
+            frame.classList.remove("is-fullscreen");
+            document.body.classList.remove("custom-fullscreen-active");
+        }
+
+        window.addEventListener("keydown", function(event) {
+            if (event.key === "Escape") {
+                closeCustomFullscreen();
+            }
+        });
+
         window.addEventListener("DOMContentLoaded", function() {
             showPage("main");
         });
@@ -558,7 +624,11 @@
                     </div>
                 </div>
                 <div class="report-body">
-                    <div class="report-frame">
+                    <div class="frame-toolbar">
+                        <button class="button" onclick="openCustomFullscreen()">На весь экран</button>
+                    </div>
+                    <div class="report-frame" id="reportFrame">
+                        <button class="button secondary close-fullscreen-btn" onclick="closeCustomFullscreen()">Закрыть</button>
                         <iframe
                             title="Резолюции РП"
                             src="https://app.powerbi.com/view?r=eyJrIjoiMmUzZjU2ZGQtZTUzMC00ZTlhLWIyODItYTg0NGZkMWRkZmIzIiwidCI6IjZlNzhkOGQ3LTRlNGUtNDMwNC05NmYxLTY5MzQyYzNjMmQzNSIsImMiOjl9"
