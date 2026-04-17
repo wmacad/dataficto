@@ -239,6 +239,12 @@
             padding: 22px;
         }
 
+        .frame-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 12px;
+        }
+
         .report-frame {
             position: relative;
             width: 100%;
@@ -268,10 +274,59 @@
             pointer-events: none;
         }
 
-        .frame-toolbar {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 12px;
+        .fullscreen-btn {
+            min-height: 36px;
+            min-width: 36px;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 8px;
+            border: none;
+            background: rgba(47, 95, 140, 0.9);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(38, 77, 114, 0.95);
+            transform: translateY(-1px);
+        }
+
+        .close-fullscreen-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 5;
+            min-height: 36px;
+            min-width: 36px;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 8px;
+            border: none;
+            background: rgba(0, 0, 0, 0.68);
+            color: #fff;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 8px 22px rgba(33, 53, 77, 0.18);
+        }
+
+        .close-fullscreen-btn:hover {
+            background: rgba(0, 0, 0, 0.82);
+            transform: translateY(-1px);
         }
 
         .report-frame.is-fullscreen {
@@ -299,15 +354,6 @@
 
         .report-frame.is-fullscreen .close-fullscreen-btn {
             display: inline-flex;
-        }
-
-        .close-fullscreen-btn {
-            display: none;
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            z-index: 4;
-            box-shadow: 0 8px 22px rgba(33, 53, 77, 0.18);
         }
 
         body.custom-fullscreen-active {
@@ -502,6 +548,20 @@
             .report-frame iframe {
                 min-height: 360px;
             }
+
+            .fullscreen-btn,
+            .close-fullscreen-btn {
+                min-height: 32px;
+                min-width: 32px;
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
+            .close-fullscreen-btn {
+                top: 8px;
+                right: 8px;
+            }
         }
 
         @media (max-width: 560px) {
@@ -541,6 +601,10 @@
             .powerbi-mask {
                 width: clamp(120px, 40vw, 190px);
                 height: 38px;
+            }
+
+            .frame-toolbar {
+                margin-bottom: 10px;
             }
         }
     </style>
@@ -625,10 +689,11 @@
                 </div>
                 <div class="report-body">
                     <div class="frame-toolbar">
-                        <button class="button" onclick="openCustomFullscreen()">На весь экран</button>
+                        <button class="fullscreen-btn" onclick="openCustomFullscreen()" aria-label="Открыть на весь экран" title="Открыть на весь экран">⛶</button>
                     </div>
+
                     <div class="report-frame" id="reportFrame">
-                        <button class="button secondary close-fullscreen-btn" onclick="closeCustomFullscreen()">Закрыть</button>
+                        <button class="close-fullscreen-btn" onclick="closeCustomFullscreen()" aria-label="Закрыть полноэкранный режим" title="Закрыть">✕</button>
                         <iframe
                             title="Резолюции РП"
                             src="https://app.powerbi.com/view?r=eyJrIjoiMmUzZjU2ZGQtZTUzMC00ZTlhLWIyODItYTg0NGZkMWRkZmIzIiwidCI6IjZlNzhkOGQ3LTRlNGUtNDMwNC05NmYxLTY5MzQyYzNjMmQzNSIsImMiOjl9"
@@ -636,6 +701,7 @@
                         </iframe>
                         <div class="powerbi-mask" aria-hidden="true"></div>
                     </div>
+
                     <div class="back-row">
                         <button class="button secondary" onclick="showPage('main')">Назад</button>
                     </div>
