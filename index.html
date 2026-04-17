@@ -239,12 +239,6 @@
             padding: 22px;
         }
 
-        .frame-toolbar {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 12px;
-        }
-
         .report-frame {
             position: relative;
             width: 100%;
@@ -275,14 +269,18 @@
         }
 
         .fullscreen-btn {
-            min-height: 36px;
-            min-width: 36px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 4;
             width: 36px;
             height: 36px;
+            min-width: 36px;
+            min-height: 36px;
             padding: 0;
-            border-radius: 8px;
             border: none;
-            background: rgba(47, 95, 140, 0.9);
+            border-radius: 9px;
+            background: rgba(47, 95, 140, 0.92);
             color: #fff;
             display: inline-flex;
             align-items: center;
@@ -292,41 +290,45 @@
             line-height: 1;
             cursor: pointer;
             transition: background 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 6px 16px rgba(33, 53, 77, 0.18);
+            backdrop-filter: blur(3px);
+            -webkit-tap-highlight-color: transparent;
         }
 
         .fullscreen-btn:hover {
-            background: rgba(38, 77, 114, 0.95);
+            background: rgba(38, 77, 114, 0.97);
             transform: translateY(-1px);
         }
 
         .close-fullscreen-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 5;
-            min-height: 36px;
-            min-width: 36px;
-            width: 36px;
-            height: 36px;
+            position: fixed;
+            top: 14px;
+            right: 14px;
+            z-index: 10001;
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            min-height: 40px;
             padding: 0;
-            border-radius: 8px;
             border: none;
-            background: rgba(0, 0, 0, 0.68);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.74);
             color: #fff;
             display: none;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             line-height: 1;
             cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease;
-            box-shadow: 0 8px 22px rgba(33, 53, 77, 0.18);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .close-fullscreen-btn:hover {
-            background: rgba(0, 0, 0, 0.82);
-            transform: translateY(-1px);
+            background: rgba(0, 0, 0, 0.86);
         }
 
         .report-frame.is-fullscreen {
@@ -352,12 +354,12 @@
             height: clamp(38px, 4.5vw, 56px);
         }
 
-        .report-frame.is-fullscreen .close-fullscreen-btn {
-            display: inline-flex;
-        }
-
         body.custom-fullscreen-active {
             overflow: hidden;
+        }
+
+        body.custom-fullscreen-active .close-fullscreen-btn {
+            display: inline-flex;
         }
 
         .contacts-list {
@@ -549,18 +551,26 @@
                 min-height: 360px;
             }
 
-            .fullscreen-btn,
-            .close-fullscreen-btn {
-                min-height: 32px;
-                min-width: 32px;
+            .fullscreen-btn {
                 width: 32px;
                 height: 32px;
+                min-width: 32px;
+                min-height: 32px;
+                top: 8px;
+                right: 8px;
                 font-size: 14px;
+                border-radius: 8px;
             }
 
             .close-fullscreen-btn {
-                top: 8px;
-                right: 8px;
+                top: 10px;
+                right: 10px;
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                min-height: 36px;
+                font-size: 18px;
+                border-radius: 9px;
             }
         }
 
@@ -603,8 +613,14 @@
                 height: 38px;
             }
 
-            .frame-toolbar {
-                margin-bottom: 10px;
+            .close-fullscreen-btn {
+                top: 8px;
+                right: 8px;
+                width: 34px;
+                height: 34px;
+                min-width: 34px;
+                min-height: 34px;
+                font-size: 17px;
             }
         }
     </style>
@@ -644,6 +660,8 @@
     </script>
 </head>
 <body>
+    <button class="close-fullscreen-btn" onclick="closeCustomFullscreen()" aria-label="Закрыть полноэкранный режим" title="Закрыть">✕</button>
+
     <header class="site-header">
         <div class="header-inner">
             <div class="brand">
@@ -688,12 +706,8 @@
                     </div>
                 </div>
                 <div class="report-body">
-                    <div class="frame-toolbar">
-                        <button class="fullscreen-btn" onclick="openCustomFullscreen()" aria-label="Открыть на весь экран" title="Открыть на весь экран">⛶</button>
-                    </div>
-
                     <div class="report-frame" id="reportFrame">
-                        <button class="close-fullscreen-btn" onclick="closeCustomFullscreen()" aria-label="Закрыть полноэкранный режим" title="Закрыть">✕</button>
+                        <button class="fullscreen-btn" onclick="openCustomFullscreen()" aria-label="Открыть на весь экран" title="Открыть на весь экран">⛶</button>
                         <iframe
                             title="Резолюции РП"
                             src="https://app.powerbi.com/view?r=eyJrIjoiMmUzZjU2ZGQtZTUzMC00ZTlhLWIyODItYTg0NGZkMWRkZmIzIiwidCI6IjZlNzhkOGQ3LTRlNGUtNDMwNC05NmYxLTY5MzQyYzNjMmQzNSIsImMiOjl9"
