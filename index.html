@@ -77,6 +77,12 @@
             opacity: 0.96;
         }
 
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .header-nav a {
             color: #fff;
             text-decoration: none;
@@ -85,6 +91,29 @@
 
         .header-nav a:hover {
             text-decoration: underline;
+        }
+
+        .lk-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            background: rgba(255, 255, 255, 0.06);
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .lk-link:hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
         }
 
         .page-shell {
@@ -517,6 +546,12 @@
                 font-size: 13px;
             }
 
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+                align-items: center;
+            }
+
             .brand-title {
                 font-size: 21px;
             }
@@ -671,12 +706,14 @@
                 <div class="brand-title">Fictodata</div>
                 <div class="brand-subtitle">Аналитические отчеты</div>
             </div>
-
-            <nav class="header-nav">
-                <a href="#" onclick="showPage('main'); return false;">Главная</a>
-                <a href="#" onclick="showPage('page1'); return false;">Резолюции</a>
-                <a href="#" onclick="showPage('contacts'); return false;">Контакты</a>
-            </nav>
+            <div class="header-actions">
+                <nav class="header-nav">
+                    <a href="#" onclick="showPage('main'); return false;">Главная</a>
+                    <a href="#" onclick="showPage('page1'); return false;">Резолюции</a>
+                    <a href="#" onclick="showPage('contacts'); return false;">Контакты</a>
+                </nav>
+                <a class="lk-link" href="https://fictodata.ru/lk/#/login" target="_blank" rel="noopener noreferrer">Личный кабинет</a>
+            </div>
         </div>
     </header>
 
@@ -695,6 +732,11 @@
                     <div class="nav-tile" onclick="showPage('contacts')">
                         <div class="nav-tile-title">Контакты</div>
                         <div class="nav-tile-text">Контактные данные по направлениям.</div>
+                    </div>
+
+                    <div class="nav-tile" onclick="window.open('https://fictodata.ru/lk/#/login', '_blank', 'noopener,noreferrer')">
+                        <div class="nav-tile-title">Личный кабинет</div>
+                        <div class="nav-tile-text">Переход к системе создания и отслеживания задач.</div>
                     </div>
                 </div>
             </section>
