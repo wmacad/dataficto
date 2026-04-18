@@ -777,7 +777,7 @@
 
         async function signInWithYandex() {
             const redirectTo = encodeURIComponent('https://fictodata.ru/');
-            const authUrl = `${supabaseUrl}/auth/v1/authorize?provider=custom:yandex&provider_id=yandex&redirect_to=${redirectTo}`;
+            const authUrl = `${supabaseUrl}/auth/v1/authorize?provider=custom:yandex&redirect_to=${redirectTo}`;
             window.location.assign(authUrl);
         }
 
