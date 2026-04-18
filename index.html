@@ -776,14 +776,39 @@
         }
 
         async function signInWithYandex() {
-            const redirectTo = encodeURIComponent('https://fictodata.ru/');
-            const authUrl = `${supabaseUrl}/auth/v1/authorize?provider=custom:yandex&redirect_to=${redirectTo}`;
-            window.location.assign(authUrl);
+            const redirectTo = `${window.location.origin}${window.location.pathname}`;
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'custom:yandex',
+                options: {
+                    redirectTo,
+                    skipBrowserRedirect: true,
+                },
+            });
+            if (error) {
+                alert(`Ошибка запуска OAuth: ${error.message}`);
+                return;
+            }
+            if (data?.url) {
+                window.location.assign(data.url);
+            }
         }
 
         async function signOutYandex() {
             await supabase.auth.signOut();
             await updateAuthUi();
+        }
+
+        function readAuthErrorFromUrl() {
+            const fromSearch = new URLSearchParams(window.location.search);
+            const hashRaw = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+            const fromHash = new URLSearchParams(hashRaw);
+            const error = fromSearch.get('error') || fromHash.get('error');
+            const description = fromSearch.get('error_description') || fromHash.get('error_description');
+            if (!error) return null;
+            return {
+                code: error,
+                description: (description || '').replace(/\+/g, ' '),
+            };
         }
 
         window.addEventListener("DOMContentLoaded", function() {
@@ -794,6 +819,11 @@
             supabase.auth.onAuthStateChange(() => {
                 updateAuthUi();
             });
+            const authError = readAuthErrorFromUrl();
+            if (authError) {
+                console.warn('OAuth error', authError);
+                alert(`Ошибка входа: ${authError.code}${authError.description ? ` (${authError.description})` : ''}`);
+            }
         });
 
         window.showPage = showPage;
