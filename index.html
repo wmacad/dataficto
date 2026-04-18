@@ -191,11 +191,14 @@
         }
 
         .nav-tile {
+            display: block;
             background: var(--surface-soft);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 22px 18px;
             text-align: left;
+            text-decoration: none;
+            color: inherit;
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
             cursor: pointer;
         }
@@ -1018,10 +1021,10 @@
                         <div class="nav-tile-text">Контактные данные по направлениям.</div>
                     </div>
 
-                    <div class="nav-tile" onclick="window.open('https://fictodata.ru/lk/#/login', '_blank', 'noopener,noreferrer')">
+                    <a class="nav-tile" href="https://fictodata.ru/lk/#/login" target="_blank" rel="noopener noreferrer">
                         <div class="nav-tile-title">Личный кабинет</div>
                         <div class="nav-tile-text">Переход к системе создания и отслеживания задач.</div>
-                    </div>
+                    </a>
                 </div>
             </section>
         </div>
