@@ -551,6 +551,31 @@
             color: var(--muted);
             font-size: 14px;
         }
+        .auth-banner {
+            display: none;
+            margin: 14px auto 0;
+            width: min(1180px, calc(100% - 32px));
+            border-radius: 12px;
+            border: 1px solid #bfd0e0;
+            background: #fbfdff;
+            color: var(--text);
+            padding: 12px 14px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .auth-banner.is-visible {
+            display: block;
+        }
+        .auth-banner.is-error {
+            border-color: #f1b4b4;
+            background: #fff6f6;
+            color: #8a2e2e;
+        }
+        .auth-banner.is-info {
+            border-color: #bfd0e0;
+            background: #fbfdff;
+            color: var(--text);
+        }
 
         @media (max-width: 980px) {
             .hero-grid,
@@ -714,13 +739,46 @@
         const supabaseAnonKey = 'sb_publishable_UoDegi9Fk6ucyT1BM85wMw_pBIbZnZo';
         const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+        const authBanner = () => document.getElementById('authBanner');
+        const authGuard = () => document.getElementById('reportAuthGuard');
+        const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+        function showAuthBanner(message, type = 'info') {
+            const el = authBanner();
+            if (!el) return;
+            el.textContent = message;
+            el.classList.add('is-visible');
+            el.classList.remove('is-error', 'is-info');
+            el.classList.add(type === 'error' ? 'is-error' : 'is-info');
+        }
+
+        function hideAuthBanner() {
+            const el = authBanner();
+            if (!el) return;
+            el.classList.remove('is-visible', 'is-error', 'is-info');
+            el.textContent = '';
+        }
+
+        async function getStableSession() {
+            // Callback token parsing in supabase-js may take a short moment after redirect.
+            for (let i = 0; i < 4; i += 1) {
+                const { data } = await supabase.auth.getSession();
+                if (data.session) return data.session;
+                await wait(180);
+            }
+            return null;
+        }
+
+        function setGuardVisible(visible) {
+            if (authGuard()) authGuard().style.display = visible ? 'block' : 'none';
+        }
+
         async function showPage(pageId) {
             if (pageId === 'page1') {
-                const { data } = await supabase.auth.getSession();
-                if (!data.session) {
-                    const guard = document.getElementById('reportAuthGuard');
-                    if (guard) guard.style.display = 'block';
-                    alert('Раздел "Резолюции" доступен после входа через Яндекс.');
+                const session = await getStableSession();
+                if (!session) {
+                    setGuardVisible(true);
+                    showAuthBanner('Раздел "Резолюции" доступен после входа через Яндекс.', 'info');
                     return;
                 }
             }
@@ -730,8 +788,8 @@
             });
             document.getElementById(pageId).style.display = "block";
             window.scrollTo({ top: 0, behavior: "smooth" });
-            const guard = document.getElementById('reportAuthGuard');
-            if (guard) guard.style.display = 'none';
+            setGuardVisible(false);
+            if (pageId !== 'main') hideAuthBanner();
         }
 
         function openCustomFullscreen() {
@@ -775,6 +833,20 @@
             if (userLabel()) userLabel().textContent = email;
         }
 
+        function clearOAuthErrorFromUrl() {
+            const current = new URL(window.location.href);
+            const hasSearchError = current.searchParams.has('error') || current.searchParams.has('error_description');
+            const hashRaw = current.hash.startsWith('#') ? current.hash.slice(1) : current.hash;
+            const hashParams = new URLSearchParams(hashRaw);
+            const hasHashError = hashParams.has('error') || hashParams.has('error_description');
+            if (!hasSearchError && !hasHashError) return;
+
+            current.searchParams.delete('error');
+            current.searchParams.delete('error_description');
+            current.hash = '';
+            window.history.replaceState({}, document.title, `${current.pathname}${current.search}`);
+        }
+
         async function signInWithYandex() {
             const redirectTo = `${window.location.origin}${window.location.pathname}`;
             const { data, error } = await supabase.auth.signInWithOAuth({
@@ -785,7 +857,7 @@
                 },
             });
             if (error) {
-                alert(`Ошибка запуска OAuth: ${error.message}`);
+                showAuthBanner(`Ошибка запуска OAuth: ${error.message}`, 'error');
                 return;
             }
             if (data?.url) {
@@ -822,7 +894,8 @@
             const authError = readAuthErrorFromUrl();
             if (authError) {
                 console.warn('OAuth error', authError);
-                alert(`Ошибка входа: ${authError.code}${authError.description ? ` (${authError.description})` : ''}`);
+                showAuthBanner(`Ошибка входа: ${authError.code}${authError.description ? ` (${authError.description})` : ''}`, 'error');
+                clearOAuthErrorFromUrl();
             }
         });
 
@@ -855,6 +928,7 @@
             </div>
         </div>
     </header>
+    <div id="authBanner" class="auth-banner" role="status" aria-live="polite"></div>
 
     <main class="page-shell">
         <div id="main" class="container">
