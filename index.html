@@ -774,11 +774,12 @@
         }
 
         async function showPage(pageId) {
-            if (pageId === 'page1') {
+            const requiresAuth = pageId === 'page1' || pageId === 'contacts';
+            if (requiresAuth) {
                 const session = await getStableSession();
                 if (!session) {
                     setGuardVisible(true);
-                    showAuthBanner('Раздел "Резолюции" доступен после входа через Яндекс.', 'info');
+                    showAuthBanner('Разделы "Резолюции" и "Контакты" доступны после входа через Яндекс.', 'info');
                     return;
                 }
             }
