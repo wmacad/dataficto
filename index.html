@@ -777,13 +777,13 @@
 
         async function signInWithYandex() {
             const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'custom:yandex',
-                options: {
-                    redirectTo: 'https://fictodata.ru/'
-                }
+              provider: 'custom:yandex',
+              options: {
+                  redirectTo: 'https://fictodata.ru/'
+              }
             });
             if (error) {
-                alert(`Ошибка входа через Яндекс: ${error.message}`);
+              alert(`Ошибка входа через Яндекс: ${error.message}`);
             }
         }
 
