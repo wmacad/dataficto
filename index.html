@@ -82,6 +82,19 @@
             align-items: center;
             gap: 12px;
         }
+        .auth-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .auth-user {
+            font-size: 12px;
+            color: #e2e8f0;
+            max-width: 220px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
         .header-nav a {
             color: #fff;
@@ -114,6 +127,26 @@
             background: rgba(255, 255, 255, 0.16);
             border-color: rgba(255, 255, 255, 0.5);
             text-decoration: none;
+        }
+        .oauth-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            background: rgba(255, 255, 255, 0.06);
+            cursor: pointer;
+        }
+        .oauth-btn:hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.5);
         }
 
         .page-shell {
@@ -551,6 +584,10 @@
                 justify-content: space-between;
                 align-items: center;
             }
+            .auth-controls {
+                width: 100%;
+                justify-content: flex-end;
+            }
 
             .brand-title {
                 font-size: 21px;
@@ -661,7 +698,13 @@
             }
         }
     </style>
-    <script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        const supabaseUrl = 'https://vsluqhjjlrwwcrfvlqny.supabase.co';
+        const supabaseAnonKey = 'sb_publishable_UoDegi9Fk6ucyT1BM85wMw_pBIbZnZo';
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
         function showPage(pageId) {
             const pages = ["main", "page1", "contacts"];
             pages.forEach(function(id) {
@@ -692,9 +735,56 @@
             }
         });
 
+        const signInBtn = () => document.getElementById('yandexSignInBtn');
+        const signOutBtn = () => document.getElementById('yandexSignOutBtn');
+        const userLabel = () => document.getElementById('authUserLabel');
+
+        async function updateAuthUi() {
+            const { data } = await supabase.auth.getSession();
+            const session = data.session;
+            if (!session) {
+                if (signInBtn()) signInBtn().style.display = 'inline-flex';
+                if (signOutBtn()) signOutBtn().style.display = 'none';
+                if (userLabel()) userLabel().textContent = 'Не авторизован';
+                return;
+            }
+            const user = session.user;
+            const email = user?.email || user?.user_metadata?.login || user?.id || 'Пользователь';
+            if (signInBtn()) signInBtn().style.display = 'none';
+            if (signOutBtn()) signOutBtn().style.display = 'inline-flex';
+            if (userLabel()) userLabel().textContent = email;
+        }
+
+        async function signInWithYandex() {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'custom:yandex',
+                options: {
+                    redirectTo: 'https://fictodata.ru/'
+                }
+            });
+            if (error) {
+                alert(`Ошибка входа через Яндекс: ${error.message}`);
+            }
+        }
+
+        async function signOutYandex() {
+            await supabase.auth.signOut();
+            await updateAuthUi();
+        }
+
         window.addEventListener("DOMContentLoaded", function() {
             showPage("main");
+            if (signInBtn()) signInBtn().addEventListener('click', signInWithYandex);
+            if (signOutBtn()) signOutBtn().addEventListener('click', signOutYandex);
+            updateAuthUi();
+            supabase.auth.onAuthStateChange(() => {
+                updateAuthUi();
+            });
         });
+
+        window.showPage = showPage;
+        window.openCustomFullscreen = openCustomFullscreen;
+        window.closeCustomFullscreen = closeCustomFullscreen;
     </script>
 </head>
 <body>
@@ -712,6 +802,11 @@
                     <a href="#" onclick="showPage('page1'); return false;">Резолюции</a>
                     <a href="#" onclick="showPage('contacts'); return false;">Контакты</a>
                 </nav>
+                <div class="auth-controls">
+                    <span id="authUserLabel" class="auth-user">Проверка сессии…</span>
+                    <button id="yandexSignInBtn" class="oauth-btn" type="button">Войти через Яндекс</button>
+                    <button id="yandexSignOutBtn" class="oauth-btn" type="button" style="display:none">Выйти</button>
+                </div>
                 <a class="lk-link" href="https://fictodata.ru/lk/#/login" target="_blank" rel="noopener noreferrer">Личный кабинет</a>
             </div>
         </div>
