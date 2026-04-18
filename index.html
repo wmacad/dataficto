@@ -738,6 +738,7 @@
         const supabaseUrl = 'https://vsluqhjjlrwwcrfvlqny.supabase.co';
         const supabaseAnonKey = 'sb_publishable_UoDegi9Fk6ucyT1BM85wMw_pBIbZnZo';
         const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        const VIEW_ACCESS_KEY = 'fictodata-view-invite-access-v1';
 
         const authBanner = () => document.getElementById('authBanner');
         const authGuard = () => document.getElementById('reportAuthGuard');
@@ -773,6 +774,59 @@
             if (authGuard()) authGuard().style.display = visible ? 'block' : 'none';
         }
 
+        function readInviteTokenFromUrl() {
+            const url = new URL(window.location.href);
+            return url.searchParams.get('invite');
+        }
+
+        function clearInviteTokenFromUrl() {
+            const url = new URL(window.location.href);
+            if (!url.searchParams.has('invite')) return;
+            url.searchParams.delete('invite');
+            window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+        }
+
+        function hasStoredViewAccess(session) {
+            if (!session?.user?.id) return false;
+            try {
+                const raw = window.localStorage.getItem(VIEW_ACCESS_KEY);
+                if (!raw) return false;
+                const parsed = JSON.parse(raw);
+                return parsed?.userId === session.user.id && parsed?.granted === true;
+            } catch {
+                return false;
+            }
+        }
+
+        async function redeemViewInviteIfPresent(session) {
+            const token = readInviteTokenFromUrl();
+            if (!token || !session?.user?.id) return false;
+            const { data, error } = await supabase.rpc('redeem_invite_link', {
+                p_token: token,
+                p_target: 'view',
+            });
+            clearInviteTokenFromUrl();
+            if (error) {
+                console.warn('redeem_invite_link(view) error:', error.message);
+                return false;
+            }
+            if (!data || data.ok !== true) {
+                return false;
+            }
+            window.localStorage.setItem(VIEW_ACCESS_KEY, JSON.stringify({
+                userId: session.user.id,
+                granted: true,
+                grantedAt: Date.now(),
+            }));
+            return true;
+        }
+
+        async function ensureViewAccess(session) {
+            if (hasStoredViewAccess(session)) return true;
+            const redeemed = await redeemViewInviteIfPresent(session);
+            return redeemed;
+        }
+
         async function showPage(pageId) {
             const requiresAuth = pageId === 'page1' || pageId === 'contacts';
             if (requiresAuth) {
@@ -780,6 +834,12 @@
                 if (!session) {
                     setGuardVisible(true);
                     showAuthBanner('Разделы "Резолюции" и "Контакты" доступны после входа через Яндекс.', 'info');
+                    return;
+                }
+                const hasViewAccess = await ensureViewAccess(session);
+                if (!hasViewAccess) {
+                    setGuardVisible(true);
+                    showAuthBanner('Для доступа к "Резолюциям" и "Контактам" требуется персональная инвайт-ссылка.', 'info');
                     return;
                 }
             }
@@ -849,7 +909,10 @@
         }
 
         async function signInWithYandex() {
-            const redirectTo = `${window.location.origin}${window.location.pathname}`;
+            const redirectUrl = new URL(`${window.location.origin}${window.location.pathname}`);
+            const invite = readInviteTokenFromUrl();
+            if (invite) redirectUrl.searchParams.set('invite', invite);
+            const redirectTo = redirectUrl.toString();
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'custom:yandex',
                 options: {
@@ -884,13 +947,20 @@
             };
         }
 
-        window.addEventListener("DOMContentLoaded", function() {
-            showPage("main");
+        window.addEventListener("DOMContentLoaded", async function() {
+            await showPage("main");
             if (signInBtn()) signInBtn().addEventListener('click', signInWithYandex);
             if (signOutBtn()) signOutBtn().addEventListener('click', signOutYandex);
-            updateAuthUi();
-            supabase.auth.onAuthStateChange(() => {
-                updateAuthUi();
+            await updateAuthUi();
+            const { data: initial } = await supabase.auth.getSession();
+            if (initial.session) {
+                await redeemViewInviteIfPresent(initial.session);
+            }
+            supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+                await updateAuthUi();
+                if (nextSession) {
+                    await redeemViewInviteIfPresent(nextSession);
+                }
             });
             const authError = readAuthErrorFromUrl();
             if (authError) {
