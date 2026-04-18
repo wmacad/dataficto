@@ -542,6 +542,15 @@
             font-size: 13px;
             text-align: center;
         }
+        .auth-guard {
+            margin-top: 20px;
+            padding: 14px 16px;
+            border: 1px dashed #bfd0e0;
+            border-radius: 12px;
+            background: #fbfdff;
+            color: var(--muted);
+            font-size: 14px;
+        }
 
         @media (max-width: 980px) {
             .hero-grid,
@@ -705,13 +714,24 @@
         const supabaseAnonKey = 'sb_publishable_UoDegi9Fk6ucyT1BM85wMw_pBIbZnZo';
         const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-        function showPage(pageId) {
+        async function showPage(pageId) {
+            if (pageId === 'page1') {
+                const { data } = await supabase.auth.getSession();
+                if (!data.session) {
+                    const guard = document.getElementById('reportAuthGuard');
+                    if (guard) guard.style.display = 'block';
+                    alert('Раздел "Резолюции" доступен после входа через Яндекс.');
+                    return;
+                }
+            }
             const pages = ["main", "page1", "contacts"];
             pages.forEach(function(id) {
                 document.getElementById(id).style.display = "none";
             });
             document.getElementById(pageId).style.display = "block";
             window.scrollTo({ top: 0, behavior: "smooth" });
+            const guard = document.getElementById('reportAuthGuard');
+            if (guard) guard.style.display = 'none';
         }
 
         function openCustomFullscreen() {
@@ -858,6 +878,9 @@
                             allowfullscreen="true">
                         </iframe>
                         <div class="powerbi-mask" aria-hidden="true"></div>
+                    </div>
+                    <div id="reportAuthGuard" class="auth-guard" style="display:none;">
+                        Вход не выполнен. Для доступа к разделу "Резолюции" нажмите "Войти через Яндекс" в верхней части страницы.
                     </div>
 
                     <div class="back-row">
