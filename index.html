@@ -776,15 +776,9 @@
         }
 
         async function signInWithYandex() {
-            const { error } = await supabase.auth.signInWithOAuth({
-              provider: 'custom:yandex',
-              options: {
-                  redirectTo: 'https://fictodata.ru/'
-              }
-            });
-            if (error) {
-              alert(`Ошибка входа через Яндекс: ${error.message}`);
-            }
+            const redirectTo = encodeURIComponent('https://fictodata.ru/');
+            const authUrl = `${supabaseUrl}/auth/v1/authorize?provider=custom:yandex&provider_id=yandex&redirect_to=${redirectTo}`;
+            window.location.assign(authUrl);
         }
 
         async function signOutYandex() {
