@@ -742,6 +742,7 @@
         const supabaseAnonKey = 'sb_publishable_UoDegi9Fk6ucyT1BM85wMw_pBIbZnZo';
         const supabase = createClient(supabaseUrl, supabaseAnonKey);
         const VIEW_ACCESS_KEY = 'fictodata-view-invite-access-v1';
+        const VIEW_PENDING_INVITE_KEY = 'fictodata-view-pending-invite-v1';
 
         const authBanner = () => document.getElementById('authBanner');
         const authGuard = () => document.getElementById('reportAuthGuard');
@@ -782,6 +783,19 @@
             return url.searchParams.get('invite');
         }
 
+        function savePendingInviteToken(token) {
+            if (!token) return;
+            window.localStorage.setItem(VIEW_PENDING_INVITE_KEY, token);
+        }
+
+        function readPendingInviteToken() {
+            return window.localStorage.getItem(VIEW_PENDING_INVITE_KEY);
+        }
+
+        function clearPendingInviteToken() {
+            window.localStorage.removeItem(VIEW_PENDING_INVITE_KEY);
+        }
+
         function clearInviteTokenFromUrl() {
             const url = new URL(window.location.href);
             if (!url.searchParams.has('invite')) return;
@@ -802,13 +816,12 @@
         }
 
         async function redeemViewInviteIfPresent(session) {
-            const token = readInviteTokenFromUrl();
+            const token = readInviteTokenFromUrl() || readPendingInviteToken();
             if (!token || !session?.user?.id) return false;
             const { data, error } = await supabase.rpc('redeem_invite_link', {
                 p_token: token,
                 p_target: 'view',
             });
-            clearInviteTokenFromUrl();
             if (error) {
                 console.warn('redeem_invite_link(view) error:', error.message);
                 return false;
@@ -816,6 +829,8 @@
             if (!data || data.ok !== true) {
                 return false;
             }
+            clearInviteTokenFromUrl();
+            clearPendingInviteToken();
             window.localStorage.setItem(VIEW_ACCESS_KEY, JSON.stringify({
                 userId: session.user.id,
                 granted: true,
@@ -913,7 +928,8 @@
 
         async function signInWithYandex() {
             const redirectUrl = new URL(`${window.location.origin}${window.location.pathname}`);
-            const invite = readInviteTokenFromUrl();
+            const invite = readInviteTokenFromUrl() || readPendingInviteToken();
+            if (invite) savePendingInviteToken(invite);
             if (invite) redirectUrl.searchParams.set('invite', invite);
             const redirectTo = redirectUrl.toString();
             const { data, error } = await supabase.auth.signInWithOAuth({
@@ -951,6 +967,8 @@
         }
 
         window.addEventListener("DOMContentLoaded", async function() {
+            const invite = readInviteTokenFromUrl();
+            if (invite) savePendingInviteToken(invite);
             await showPage("main");
             if (signInBtn()) signInBtn().addEventListener('click', signInWithYandex);
             if (signOutBtn()) signOutBtn().addEventListener('click', signOutYandex);
