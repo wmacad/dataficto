@@ -36,6 +36,10 @@
             min-height: 100vh;
         }
 
+        body.page-busy {
+            cursor: progress;
+        }
+
         .site-header {
             background: linear-gradient(180deg, var(--header-top) 0%, var(--header-bottom) 100%);
             color: #fff;
@@ -752,6 +756,7 @@
         const authBanner = () => document.getElementById('authBanner');
         const authGuard = () => document.getElementById('reportAuthGuard');
         const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        let pageTransitionInFlight = false;
 
         function showAuthBanner(message, type = 'info') {
             const el = authBanner();
@@ -767,6 +772,22 @@
             if (!el) return;
             el.classList.remove('is-visible', 'is-error', 'is-info');
             el.textContent = '';
+        }
+
+        function setPageBusy(busy) {
+            document.body.classList.toggle('page-busy', busy);
+        }
+
+        async function withTimeout(promise, timeoutMs, message) {
+            let timeoutId;
+            const timeoutPromise = new Promise((_, reject) => {
+                timeoutId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
+            });
+            try {
+                return await Promise.race([promise, timeoutPromise]);
+            } finally {
+                if (timeoutId) window.clearTimeout(timeoutId);
+            }
         }
 
         async function getStableSession() {
@@ -851,29 +872,50 @@
         }
 
         async function showPage(pageId) {
-            const requiresAuth = pageId === 'page1' || pageId === 'contacts';
-            if (requiresAuth) {
-                const session = await getStableSession();
-                if (!session) {
-                    setGuardVisible(true);
-                    showAuthBanner('Разделы "Резолюции" и "Контакты" доступны после входа через Яндекс.', 'info');
-                    return;
+            if (pageTransitionInFlight) return;
+            pageTransitionInFlight = true;
+            setPageBusy(true);
+            try {
+                const requiresAuth = pageId === 'page1' || pageId === 'contacts';
+                if (requiresAuth) {
+                    showAuthBanner('Проверяем доступ к разделу…', 'info');
+                    const session = await withTimeout(
+                        getStableSession(),
+                        5000,
+                        'Проверка сессии заняла слишком много времени.'
+                    );
+                    if (!session) {
+                        setGuardVisible(true);
+                        showAuthBanner('Разделы "Резолюции" и "Контакты" доступны после входа через Яндекс.', 'info');
+                        return;
+                    }
+                    const hasViewAccess = await withTimeout(
+                        ensureViewAccess(session),
+                        7000,
+                        'Проверка инвайт-доступа заняла слишком много времени.'
+                    );
+                    if (!hasViewAccess) {
+                        setGuardVisible(true);
+                        showAuthBanner('Для доступа к "Резолюциям" и "Контактам" требуется персональная инвайт-ссылка.', 'info');
+                        return;
+                    }
                 }
-                const hasViewAccess = await ensureViewAccess(session);
-                if (!hasViewAccess) {
-                    setGuardVisible(true);
-                    showAuthBanner('Для доступа к "Резолюциям" и "Контактам" требуется персональная инвайт-ссылка.', 'info');
-                    return;
-                }
+                const pages = ["main", "page1", "contacts"];
+                pages.forEach(function(id) {
+                    document.getElementById(id).style.display = "none";
+                });
+                document.getElementById(pageId).style.display = "block";
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                setGuardVisible(false);
+                if (pageId !== 'main') hideAuthBanner();
+            } catch (error) {
+                console.warn('showPage failed:', error);
+                setGuardVisible(true);
+                showAuthBanner('Страница отвечает слишком долго. Попробуйте ещё раз или обновите вкладку.', 'error');
+            } finally {
+                pageTransitionInFlight = false;
+                setPageBusy(false);
             }
-            const pages = ["main", "page1", "contacts"];
-            pages.forEach(function(id) {
-                document.getElementById(id).style.display = "none";
-            });
-            document.getElementById(pageId).style.display = "block";
-            window.scrollTo({ top: 0, behavior: "smooth" });
-            setGuardVisible(false);
-            if (pageId !== 'main') hideAuthBanner();
         }
 
         function openCustomFullscreen() {
@@ -902,19 +944,30 @@
         const userLabel = () => document.getElementById('authUserLabel');
 
         async function updateAuthUi() {
-            const { data } = await supabase.auth.getSession();
-            const session = data.session;
-            if (!session) {
+            try {
+                const { data } = await withTimeout(
+                    supabase.auth.getSession(),
+                    5000,
+                    'Проверка авторизации заняла слишком много времени.'
+                );
+                const session = data.session;
+                if (!session) {
+                    if (signInBtn()) signInBtn().style.display = 'inline-flex';
+                    if (signOutBtn()) signOutBtn().style.display = 'none';
+                    if (userLabel()) userLabel().textContent = 'Не авторизован';
+                    return;
+                }
+                const user = session.user;
+                const email = user?.email || user?.user_metadata?.login || user?.id || 'Пользователь';
+                if (signInBtn()) signInBtn().style.display = 'none';
+                if (signOutBtn()) signOutBtn().style.display = 'inline-flex';
+                if (userLabel()) userLabel().textContent = email;
+            } catch (error) {
+                console.warn('updateAuthUi failed:', error);
                 if (signInBtn()) signInBtn().style.display = 'inline-flex';
                 if (signOutBtn()) signOutBtn().style.display = 'none';
-                if (userLabel()) userLabel().textContent = 'Не авторизован';
-                return;
+                if (userLabel()) userLabel().textContent = 'Проверка авторизации…';
             }
-            const user = session.user;
-            const email = user?.email || user?.user_metadata?.login || user?.id || 'Пользователь';
-            if (signInBtn()) signInBtn().style.display = 'none';
-            if (signOutBtn()) signOutBtn().style.display = 'inline-flex';
-            if (userLabel()) userLabel().textContent = email;
         }
 
         function clearOAuthErrorFromUrl() {
@@ -972,27 +1025,40 @@
         }
 
         window.addEventListener("DOMContentLoaded", async function() {
-            const invite = readInviteTokenFromUrl();
-            if (invite) savePendingInviteToken(invite);
-            await showPage("main");
-            if (signInBtn()) signInBtn().addEventListener('click', signInWithYandex);
-            if (signOutBtn()) signOutBtn().addEventListener('click', signOutYandex);
-            await updateAuthUi();
-            const { data: initial } = await supabase.auth.getSession();
-            if (initial.session) {
-                await redeemViewInviteIfPresent(initial.session);
-            }
-            supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+            try {
+                const invite = readInviteTokenFromUrl();
+                if (invite) savePendingInviteToken(invite);
+                await showPage("main");
+                if (signInBtn()) signInBtn().addEventListener('click', signInWithYandex);
+                if (signOutBtn()) signOutBtn().addEventListener('click', signOutYandex);
                 await updateAuthUi();
-                if (nextSession) {
-                    await redeemViewInviteIfPresent(nextSession);
+                const { data: initial } = await withTimeout(
+                    supabase.auth.getSession(),
+                    5000,
+                    'Начальная проверка сессии заняла слишком много времени.'
+                );
+                if (initial.session) {
+                    await redeemViewInviteIfPresent(initial.session);
                 }
-            });
-            const authError = readAuthErrorFromUrl();
-            if (authError) {
-                console.warn('OAuth error', authError);
-                showAuthBanner(`Ошибка входа: ${authError.code}${authError.description ? ` (${authError.description})` : ''}`, 'error');
-                clearOAuthErrorFromUrl();
+                supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+                    try {
+                        await updateAuthUi();
+                        if (nextSession) {
+                            await redeemViewInviteIfPresent(nextSession);
+                        }
+                    } catch (error) {
+                        console.warn('onAuthStateChange failed:', error);
+                    }
+                });
+                const authError = readAuthErrorFromUrl();
+                if (authError) {
+                    console.warn('OAuth error', authError);
+                    showAuthBanner(`Ошибка входа: ${authError.code}${authError.description ? ` (${authError.description})` : ''}`, 'error');
+                    clearOAuthErrorFromUrl();
+                }
+            } catch (error) {
+                console.warn('DOMContentLoaded init failed:', error);
+                showAuthBanner('Не удалось полностью инициализировать страницу. Попробуйте обновить вкладку.', 'error');
             }
         });
 
