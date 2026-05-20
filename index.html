@@ -738,9 +738,14 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-        const supabaseUrl = 'https://vsluqhjjlrwwcrfvlqny.supabase.co';
-        const supabaseAnonKey = 'sb_publishable_UoDegi9Fk6ucyT1BM85wMw_pBIbZnZo';
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        const supabaseUrl = 'https://api.fictodata.ru';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc4ODQ0MDE2LCJleHAiOjE5MzY1MjQwMTZ9.LxcJbL14nkJJJ_UMqj4pRuzzP5Z8v4mTWlNiAMeXi0w';
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+            auth: {
+                // Keep root-page session independent from the LK app session.
+                storageKey: 'fictodata-view-auth-token',
+            },
+        });
         const VIEW_ACCESS_KEY = 'fictodata-view-invite-access-v1';
         const VIEW_PENDING_INVITE_KEY = 'fictodata-view-pending-invite-v1';
 
