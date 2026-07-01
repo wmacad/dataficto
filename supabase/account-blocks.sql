@@ -64,3 +64,4 @@ $$;
 
 grant execute on function public.get_my_account_access() to authenticated;
 grant select on public.account_blocks to authenticated;
+grant all privileges on table public.account_blocks to service_role;
